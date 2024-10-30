@@ -8,14 +8,25 @@ const TransactionList: React.FC = () => {
   const dispatch = useAppDispatch();
 
   return (
-    <ul>
+    <div>
       {transactions.map((transaction: Transaction) => (
-        <li key={transaction.id}>
-          {transaction.description} - {transaction.amount}
-          <button onClick={() => dispatch(removeTransaction(transaction.id))}>Delete</button>
-        </li>
+        <div
+          key={transaction.id}
+          className={`bg-white rounded-lg shadow-lg p-4 mb-4 ${
+            transaction.isNew ? 'bg-green-100' : ''
+          }`}
+        >
+          <p className="text-gray-600">{transaction.description}</p>
+          <p className="text-gray-600">${transaction.amount}</p>
+          <button
+            onClick={() => dispatch(removeTransaction(transaction.id))}
+            className="bg-red-500 text-white px-4 py-2 rounded-lg mt-2"
+          >
+            Delete
+          </button>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 };
 

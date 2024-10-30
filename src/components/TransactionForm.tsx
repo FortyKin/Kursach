@@ -18,6 +18,7 @@ const TransactionForm: React.FC = () => {
       description,
       date: new Date().toISOString(),
       type,
+      isNew: true, // Add this line to mark the transaction as new
     };
     dispatch(addTransaction(newTransaction));
     setAmount('');
@@ -40,7 +41,10 @@ const TransactionForm: React.FC = () => {
         placeholder="Description"
         required
       />
-      <select value={type} onChange={(e) => setType(e.target.value as 'income' | 'expense')}>
+      <select
+        value={type}
+        onChange={(e) => setType(e.target.value as 'income' | 'expense')}
+      >
         <option value="income">Income</option>
         <option value="expense">Expense</option>
       </select>

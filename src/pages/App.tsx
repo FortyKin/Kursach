@@ -1,8 +1,8 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { store } from '../store';
-import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
+import TransactionModal from '../components/TransactionModal';
 
 const Appe: React.FC = () => {
   return (
@@ -21,15 +21,11 @@ const Appe: React.FC = () => {
         <main className="flex-grow container mx-auto mt-24 px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-bold mb-4 text-blue-600">Add Transaction</h2>
-              <TransactionForm />
-            </div>
-
-            <div className="bg-white rounded-lg shadow-lg p-8">
               <h2 className="text-2xl font-bold mb-4 text-blue-600">Transaction History</h2>
               <TransactionList />
             </div>
           </div>
+          <TransactionModal/>
         </main>
 
         <footer className="bg-blue-600 text-white p-4 mt-auto">

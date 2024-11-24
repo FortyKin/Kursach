@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addTransaction } from '../store/financeSlice';
-import { Transaction } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+
+export interface Transaction {
+  id: string;
+  amount: number;
+  description: string;
+  date: string;
+  type: 'income' | 'expense';
+  isNew: boolean;
+}
 
 const TransactionForm: React.FC = () => {
   const [amount, setAmount] = useState('');

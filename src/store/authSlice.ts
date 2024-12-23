@@ -12,6 +12,14 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
+export interface RootState {
+  auth: {
+    user: User | null;
+    token: string | null;
+    isAuthenticated: boolean;
+  };
+}
+
 const initialState: AuthState = {
   user: null,
   token: localStorage.getItem('token'),

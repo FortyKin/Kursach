@@ -5,7 +5,7 @@ export interface Transaction {
   description: string;
   date: string;
   type: 'income' | 'expense';
-  transactionType: 'debt' | 'credit';
+  transactionType: 'installment' | 'credit';
   // Новые поля для кредита
   paymentDate?: string;
   interestRate?: number;
@@ -15,6 +15,12 @@ export interface Transaction {
   remainingPayments?: number; // оставшиеся платежи
   totalInterest?: number; // общая сумма процентов
   isNew: boolean;
+  storeName?: string;
+  productCategory?: string;
+  initialPayment?: number;
+  hasInsurance?: boolean;
+  insuranceCost?: number;
+  paidMonths?: { [key: number]: boolean };
 }
 
 export interface CreditCalculation {

@@ -25,7 +25,10 @@ const Header: React.FC = () => {
         <nav className="hidden md:flex md:items-center md:space-x-4">
           <Link to="/" className="text-white hover:text-blue-200">Home</Link>
           {isAuthenticated && (
+            <>
             <Link to="/app" className="text-white hover:text-blue-200">App</Link>
+            <Link to="/profile" className="text-white hover:text-blue-200">Профіль</Link>
+            </>
           )}
           
           {isAuthenticated ? (

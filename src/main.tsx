@@ -6,6 +6,7 @@ import { store } from './store';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Appe from './pages/App';
+import Profile from './pages/Profile/ProfilePage';
 import './index.css';
 import LoginForm from './pages/auth/LoginForm';
 import RegisterForm from './pages/auth/RegisterForm';
@@ -17,12 +18,25 @@ const App = () => {
       <Provider store={store}>
         <Router>
           <div className="flex flex-col min-h-screen bg-gray-100">
-          <Header />
+            <Header />
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/app" element={
-                  <Appe />
-              } />
+              <Route 
+                path="/app" 
+                element={
+                
+                    <Appe />
+                  
+                } 
+              />
+              <Route 
+                path="/profile" 
+                element={
+                 
+                    <Profile />
+                  
+                } 
+              />
               <Route path="/login" element={<LoginForm />} />
               <Route path="/register" element={<RegisterForm />} />
             </Routes>

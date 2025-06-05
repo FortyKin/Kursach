@@ -8,20 +8,12 @@ const App: React.FC = () => {
   return (
     <Provider store={store}>
       <div className="flex flex-col min-h-screen bg-gray-100 overflow-x-hidden">
-        <header className="bg-blue-600 text-white p-4 fixed top-0 left-0 right-0 z-10 shadow-md">
-          <div className="container mx-auto flex justify-between items-center">
-            <h1 className="text-xl font-bold">Personal Finance Manager</h1>
-            <nav>
-              <a href="/" className="mr-4 hover:underline">Home</a>
-              <a href="/app" className="hover:underline">App</a>
-            </nav>
-          </div>
-        </header>
+        
 
         <main className="flex-grow container mx-auto mt-24 px-4 py-8">
           <div className="w-full">
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-2xl font-bold mb-6 text-blue-600">Transaction History</h2>
+              <h2 className="text-2xl font-bold mb-6 text-blue-600">Financial calculator</h2>
               <div className="overflow-x-auto">
                 <TransactionList />
               </div>

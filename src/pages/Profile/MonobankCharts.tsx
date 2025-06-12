@@ -274,27 +274,31 @@ const ExpensesStats: React.FC<ExpensesStatsProps> = ({ transactions, expensesByC
     .filter(t => t.amount > 0)
     .reduce((sum, t) => sum + t.amount, 0) / 100;
     
-  const avgExpensePerDay = totalExpenses / 30; // Assuming 30 days
+  const dates = transactions.map(t => new Date(t.time * 1000).toDateString());
+  const uniqueDates = [...new Set(dates)];
+  const actualDays = Math.max(uniqueDates.length, 1);
+  
+  const avgExpensePerDay = totalExpenses / actualDays;
   const topCategory = expensesByCategory.sort((a, b) => b.amount - a.amount)[0];
   
   const stats: StatsData[] = [
     {
       title: 'Загальні витрати',
-      value: `${totalExpenses.toLocaleString('uk-UA')} ₴`,
+      value: `${totalExpenses.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₴`,
       color: 'text-red-600',
       bgColor: 'bg-red-50'
     },
     {
       title: 'Загальні доходи',
-      value: `${totalIncome.toLocaleString('uk-UA')} ₴`,
+      value: `${totalIncome.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₴`,
       color: 'text-green-600',
       bgColor: 'bg-green-50'
     },
     {
-      title: 'Середні витрати/день',
-      value: `${avgExpensePerDay.toLocaleString('uk-UA')} ₴`,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      title: 'Середні витрати за день',
+      value: `${avgExpensePerDay.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₴`,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50'
     },
     {
       title: 'Топ категорія',
@@ -305,7 +309,7 @@ const ExpensesStats: React.FC<ExpensesStatsProps> = ({ transactions, expensesByC
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"> {/* Повернули назад lg:grid-cols-4 */}
       {stats.map((stat, index) => (
         <div key={index} className={`${stat.bgColor} p-4 rounded-lg border`}>
           <h4 className="text-sm font-medium text-gray-600 mb-1">{stat.title}</h4>

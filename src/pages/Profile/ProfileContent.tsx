@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, RefreshCw, CheckCircle, XCircle, BarChart2, Calendar, Filter, RotateCcw } from 'lucide-react';
+import { CreditCard, RefreshCw, CheckCircle, XCircle, BarChart2, Calendar, Filter, RotateCcw, Trash2 } from 'lucide-react';
 import MonobankCharts, { Transactions, ExpenseCategory } from './MonobankCharts';
+import { mccCategories, DEFAULT_CATEGORY } from './mccCategories';
 
 interface ProfileContentProps {
   user: any; // Replace with proper user type from your auth state
@@ -38,41 +39,6 @@ interface TransactionFilters {
   category: string;
 }
 
-// MCC (Merchant Category Code) mapping for expense categories
-const mccCategories: Record<number, string> = {
-  4121: 'Транспорт',
-  4111: 'Транспорт',
-  4131: 'Транспорт',
-  5411: 'Продукти',
-  5499: 'Продукти',
-  5422: 'Продукти',
-  5441: 'Продукти',
-  5812: 'Ресторани',
-  5813: 'Ресторани',
-  5814: 'Ресторани',
-  7832: 'Розваги',
-  7922: 'Розваги',
-  7991: 'Розваги',
-  7996: 'Розваги',
-  7997: 'Розваги',
-  7999: 'Розваги',
-  5912: 'Аптека',
-  8062: 'Медицина',
-  8099: 'Медицина',
-  5311: 'Товари',
-  5399: 'Товари',
-  5651: 'Одяг',
-  5691: 'Одяг',
-  5699: 'Одяг',
-  5945: 'Хобі',
-  5734: 'Техніка',
-  4900: 'Комунальні послуги',
-  
-};
-
-// Default category for unknown MCC codes
-const DEFAULT_CATEGORY = 'Інше';
-
 const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
   const [monobankToken, setMonobankToken] = useState('');
   const [tokenVerified, setTokenVerified] = useState(false);
@@ -92,6 +58,149 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
     amount: 'all',
     category: 'all'
   });
+
+  // 1. Загрузка данных из localStorage при монтировании компонента
+  useEffect(() => {
+    const loadDataFromStorage = () => {
+      try {
+        // Загружаем токен
+        const savedToken = localStorage.getItem(`monobank_token_${user?.id}`);
+        if (savedToken) {
+          setMonobankToken(savedToken);
+          setTokenVerified(true);
+        }
+
+        // Загружаем аккаунты
+        const savedAccounts = localStorage.getItem(`monobank_accounts_${user?.id}`);
+        if (savedAccounts) {
+          const parsedAccounts = JSON.parse(savedAccounts);
+          setAccounts(parsedAccounts);
+        }
+
+        // Загружаем выбранный аккаунт
+        const savedSelectedAccount = localStorage.getItem(`monobank_selected_account_${user?.id}`);
+        if (savedSelectedAccount) {
+          setSelectedAccountId(savedSelectedAccount);
+        }
+
+        // Загружаем транзакции
+        const savedTransactions = localStorage.getItem(`monobank_transactions_${user?.id}`);
+        if (savedTransactions) {
+          const parsedData = JSON.parse(savedTransactions);
+          // Проверяем актуальность данных (5 минут)
+          if (isDataFresh(parsedData.timestamp)) {
+            setTransactions(parsedData.transactions);
+          }
+        }
+
+        // Загружаем фильтры
+        const savedFilters = localStorage.getItem(`monobank_filters_${user?.id}`);
+        if (savedFilters) {
+          const parsedFilters = JSON.parse(savedFilters);
+          setFilters(parsedFilters);
+        }
+
+        // Загружаем состояние showAllTransactions
+        const savedShowAll = localStorage.getItem(`monobank_show_all_${user?.id}`);
+        if (savedShowAll !== null) {
+          setShowAllTransactions(JSON.parse(savedShowAll));
+        }
+
+      } catch (error) {
+        console.error('Ошибка при загрузке данных из localStorage:', error);
+      }
+    };
+
+    if (user?.id) {
+      loadDataFromStorage();
+    }
+  }, [user?.id]);
+
+  // 2. Сохранение токена в localStorage
+  useEffect(() => {
+    if (user?.id && monobankToken) {
+      localStorage.setItem(`monobank_token_${user.id}`, monobankToken);
+    }
+  }, [monobankToken, user?.id]);
+
+  // 3. Сохранение статуса верификации токена
+  useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem(`monobank_token_verified_${user.id}`, JSON.stringify(tokenVerified));
+    }
+  }, [tokenVerified, user?.id]);
+
+  // 4. Сохранение аккаунтов в localStorage
+  useEffect(() => {
+    if (user?.id && accounts.length > 0) {
+      localStorage.setItem(`monobank_accounts_${user.id}`, JSON.stringify(accounts));
+    }
+  }, [accounts, user?.id]);
+
+  // 5. Сохранение выбранного аккаунта
+  useEffect(() => {
+    if (user?.id && selectedAccountId) {
+      localStorage.setItem(`monobank_selected_account_${user.id}`, selectedAccountId);
+    }
+  }, [selectedAccountId, user?.id]);
+
+  // 6. Сохранение транзакций в localStorage
+  useEffect(() => {
+    if (user?.id && transactions.length > 0) {
+      const dataToSave = {
+        transactions: transactions,
+        timestamp: Date.now(),
+        accountId: selectedAccountId
+      };
+      localStorage.setItem(`monobank_transactions_${user.id}`, JSON.stringify(dataToSave));
+    }
+  }, [transactions, user?.id, selectedAccountId]);
+
+  // 7. Сохранение фильтров
+  useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem(`monobank_filters_${user.id}`, JSON.stringify(filters));
+    }
+  }, [filters, user?.id]);
+
+  // 8. Сохранение состояния showAllTransactions
+  useEffect(() => {
+    if (user?.id) {
+      localStorage.setItem(`monobank_show_all_${user.id}`, JSON.stringify(showAllTransactions));
+    }
+  }, [showAllTransactions, user?.id]);
+
+  // Функция для проверки актуальности данных
+  const isDataFresh = (timestamp: number, maxAge: number = 5 * 60 * 1000) => {
+    return Date.now() - timestamp < maxAge; // по умолчанию данные актуальны 5 минут
+  };
+
+  // Функция для очистки данных
+  const clearStoredData = () => {
+    if (user?.id) {
+      localStorage.removeItem(`monobank_token_${user.id}`);
+      localStorage.removeItem(`monobank_token_verified_${user.id}`);
+      localStorage.removeItem(`monobank_accounts_${user.id}`);
+      localStorage.removeItem(`monobank_selected_account_${user.id}`);
+      localStorage.removeItem(`monobank_transactions_${user.id}`);
+      localStorage.removeItem(`monobank_filters_${user.id}`);
+      localStorage.removeItem(`monobank_show_all_${user.id}`);
+      
+      // Сбрасываем состояние
+      setMonobankToken('');
+      setTokenVerified(false);
+      setAccounts([]);
+      setSelectedAccountId('');
+      setTransactions([]);
+      setFilters({
+        type: 'all',
+        period: 'all', 
+        amount: 'all',
+        category: 'all'
+      });
+      setShowAllTransactions(false);
+    }
+  };
 
   // Function to get Monobank accounts with token
   const fetchMonobankAccounts = async () => {
@@ -124,7 +233,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
           if (data.clientInfo.accounts.length > 0) {
             setSelectedAccountId(data.clientInfo.accounts[0].id);
             // Fetch transactions for the first account
-            fetchTransactions(data.clientInfo.accounts[0].id);
+            fetchTransactionsWithCache(data.clientInfo.accounts[0].id);
           }
         }
         
@@ -144,6 +253,29 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
     } finally {
       setIsLoadingAccounts(false);
     }
+  };
+
+  // Улучшенная функция загрузки транзакций с проверкой кэша
+  const fetchTransactionsWithCache = async (accountId: string, forceRefresh: boolean = false) => {
+    // Проверяем кэшированные данные
+    if (!forceRefresh && user?.id) {
+      const cachedData = localStorage.getItem(`monobank_transactions_${user.id}`);
+      if (cachedData) {
+        try {
+          const parsed = JSON.parse(cachedData);
+          if (parsed.accountId === accountId && isDataFresh(parsed.timestamp)) {
+            setTransactions(parsed.transactions);
+            setSelectedAccountId(accountId);
+            return;
+          }
+        } catch (error) {
+          console.error('Ошибка при парсинге кэшированных данных:', error);
+        }
+      }
+    }
+
+    // Если кэш пустой или устарел, загружаем с сервера
+    await fetchTransactions(accountId);
   };
 
   // Function to fetch transactions for selected account
@@ -264,13 +396,20 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
 
   // Reset all filters
   const resetFilters = () => {
-    setFilters({
-      type: 'all',
-      period: 'all',
-      amount: 'all',
+    const defaultFilters = {
+      type: 'all' as const,
+      period: 'all' as const,
+      amount: 'all' as const,
       category: 'all'
-    });
+    };
+    setFilters(defaultFilters);
     setShowAllTransactions(false);
+    
+    // Сохраняем в localStorage
+    if (user?.id) {
+      localStorage.setItem(`monobank_filters_${user.id}`, JSON.stringify(defaultFilters));
+      localStorage.setItem(`monobank_show_all_${user.id}`, JSON.stringify(false));
+    }
   };
 
   // Group transactions by category and calculate total expenses
@@ -279,26 +418,30 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
     const expenses = transactions.filter(t => t.amount < 0);
     
     // Group by category
-    const groupedExpenses: Record<string, number> = {};
-    
+    const groupedExpenses: Record<string, {amount: number, currencyCode: number}> = {};
+  
     expenses.forEach(transaction => {
       const category = mccCategories[transaction.mcc] || DEFAULT_CATEGORY;
       const amount = Math.abs(transaction.amount);
       
       if (groupedExpenses[category]) {
-        groupedExpenses[category] += amount;
+        groupedExpenses[category].amount += amount;
       } else {
-        groupedExpenses[category] = amount;
+        groupedExpenses[category] = {
+          amount: amount,
+          currencyCode: transaction.currencyCode
+        };
       }
     });
     
     // Convert to array of objects for easier rendering
-    return Object.entries(groupedExpenses).map(([category, amount]) => ({
+    return Object.entries(groupedExpenses).map(([category, data]) => ({
       category,
-      amount,
-      formattedAmount: (amount / 100).toLocaleString('uk-UA', {
+      amount: data.amount,
+      currencyCode: data.currencyCode,
+      formattedAmount: (data.amount / 100).toLocaleString('uk-UA', {
         style: 'currency',
-        currency: getCurrencyName(980) // Default to UAH
+        currency: getCurrencyName(data.currencyCode)
       })
     }));
   };
@@ -361,12 +504,22 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
     <div className="md:w-3/4 p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Історія активності</h2>
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
-          onClick={() => setShowModal(true)}
-        >
-          <CreditCard className="w-4 h-4 mr-2" /> Мої рахунки
-        </button>
+        <div className="flex space-x-2">
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+            onClick={() => setShowModal(true)}
+          >
+            <CreditCard className="w-4 h-4 mr-2" /> Мої рахунки
+          </button>
+          {tokenVerified && (
+            <button
+              onClick={clearStoredData}
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 flex items-center"
+            >
+              <Trash2 className="w-4 h-4 mr-2" /> Очистити дані
+            </button>
+          )}
+        </div>
       </div>
       
       <div className="bg-gray-50 p-4 rounded-md mb-6">
@@ -445,7 +598,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
                   className={`px-4 py-2 rounded-md ${
                     selectedAccountId === account.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'
                   }`}
-                  onClick={() => fetchTransactions(account.id)}
+                  onClick={() => fetchTransactionsWithCache(account.id)}
                 >
                   {getAccountName(account)}
                 </button>
@@ -463,7 +616,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
               <h3 className="text-lg font-semibold">Витрати за останні 30 днів</h3>
               <button 
                 className="flex items-center text-blue-600 hover:text-blue-800"
-                onClick={() => selectedAccountId && fetchTransactions(selectedAccountId)}
+                onClick={() => selectedAccountId && fetchTransactionsWithCache(selectedAccountId, true)}
                 disabled={isLoadingTransactions}
               >
                 <RefreshCw className="w-4 h-4 mr-1" /> Оновити
@@ -485,11 +638,6 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
                 </div>
               ) : transactions.length > 0 ? (
                 <>
-                  <div className="flex justify-between items-center mb-3 pb-2 border-b">
-                    <span className="font-medium">Загальні витрати:</span>
-                    <span className="font-bold text-lg">{getTotalExpenses()}</span>
-                  </div>
-                  
                   {/* Chart/visualization */}
                   <div className="bg-white p-4 rounded-md mb-4">
                     <h4 className="font-medium mb-3 flex items-center">
@@ -524,7 +672,8 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
           </div>
         </div>
       )}
-{tokenVerified && transactions.length > 0 && (
+
+      {tokenVerified && transactions.length > 0 && (
         <div className="mt-8">
           <MonobankCharts 
             transactions={transactions}
@@ -532,7 +681,6 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
           />
         </div>
       )}
-
 
       {/* Transaction Filters */}
       {tokenVerified && transactions.length > 0 && (
@@ -580,6 +728,7 @@ const ProfileContent: React.FC<ProfileContentProps> = ({ user }) => {
                   <option value="month">Місяць</option>
                 </select>
               </div>
+              
               
               {/* Amount Filter */}
               <div>
